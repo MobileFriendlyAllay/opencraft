@@ -1,4 +1,3 @@
-
         // --- GAME STATE ---
         const Game = {
             // Player properties
@@ -47,6 +46,7 @@
             // Input Trackers
             keysPressed: {},
             pointerLocked: false,
+            controlsInitialized: false, // Flag to prevent multi-registration bugs
             
             // Selector Box Mesh
             selectionBox: null,
@@ -167,11 +167,13 @@
             Game.dirty = false;
             Game.lastSaveTime = Date.now();
             Game.player.flying = false;
+            Game.player.lastSpaceTime = 0;
+            Game.keysPressed = {};
 
             // Initialize Three.js Engine
             initThree();
 
-            // Setup input event listeners
+            // Setup input event listeners (guarded against duplicate registrations)
             initControls();
 
             // Lock pointer to begin
@@ -285,7 +287,7 @@
                         for (let y = 0; y < 16; y++) {
                             const val = Math.floor(Math.random() * 20) + 50;
                             if (x === 3 || x === 7 || x === 11) {
-                                ctx.fillStyle = `rgb(${Math.floor(val*0.6)}, ${Math.floor(val*0.5)}, ${Math.floor(val*0.4)})`;
+                                            ctx.fillStyle = `rgb(${Math.floor(val*0.6)}, ${Math.floor(val*0.5)}, ${Math.floor(val*0.4)})`;
                             } else {
                                 ctx.fillStyle = `rgb(val, ${Math.floor(val * 0.8)}, ${Math.floor(val * 0.6)})`;
                             }
@@ -811,6 +813,10 @@
 
         // --- GAME CONTROLS & POINTER LOCK ---
         function initControls() {
+            // FIX: Prevent registering multiple handlers upon loading worlds
+            if (Game.controlsInitialized) return;
+            Game.controlsInitialized = true;
+
             // Mouse Interaction setup
             window.addEventListener('mousedown', (e) => {
                 // If clicking an interactive button or main/pause menus are open, do not intercept
@@ -850,11 +856,6 @@
             window.addEventListener('keydown', (e) => {
                 const keyLower = e.key.toLowerCase();
                 Game.keysPressed[keyLower] = true;
-
-                // Escape Pauses & releases pointer
-                if (e.key === 'Escape') {
-                    // Handled automatically via pointerlockchange
-                }
 
                 // Detect double-tap space for flying
                 if (e.key === ' ') {
@@ -1245,7 +1246,8 @@
                 
                 // Keep saves active for 365 days
                 const maxAge = 365 * 24 * 60 * 60;
-                document.cookie = `opencraft_save=${encodeURIComponent(serialized)}; max-age=${maxAge}; path=/; SameSite=Strict`;
+                // FIX: Use SameSite=None; Secure to allow cookie usage inside cross-origin iframe sandboxes
+                document.cookie = `opencraft_save=${encodeURIComponent(serialized)}; max-age=${maxAge}; path=/; SameSite=None; Secure`;
                 
                 if (isAuto) {
                     showAlert("Auto-saved world!");
@@ -1264,12 +1266,13 @@
         function loadFromCookies() {
             try {
                 const name = "opencraft_save=";
-                const decodedCookie = decodeURIComponent(document.cookie);
-                const ca = decodedCookie.split(';');
+                const rawCookie = document.cookie;
+                const ca = rawCookie.split(';');
                 for (let i = 0; i < ca.length; i++) {
                     let c = ca[i].trim();
                     if (c.indexOf(name) === 0) {
-                        const val = c.substring(name.length, c.length);
+                        // FIX: Decode only the saved payload rather than the entire raw cookie string
+                        const val = decodeURIComponent(c.substring(name.length));
                         const data = JSON.parse(val);
                         if (data.modifiedBlocks) {
                             Game.modifiedBlocks = data.modifiedBlocks;
