@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opencraft</title>
+    <!-- Tailwind CSS for clean modular menus and UI positioning -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js for high-performance 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* Minecraft Custom Font Definitions */
+        @font-face {
+            font-family: 'MinecraftTen';
+            src: url('fonts/minecraft-ten.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Mojangles';
+            src: url('fonts/mojangles.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* Fallbacks if fonts fail to load */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Mojangles', 'Courier New', Courier, monospace;
+            user-select: none;
+            background-color: #000;
+        }
+
+        .mc-logo {
+            font-family: 'MinecraftTen', 'Impact', sans-serif;
+            text-shadow: 4px 4px 0px #3f3f3f;
+            letter-spacing: 2px;
+        }
+
+        /* Standard Minecraft Button Styling */
+        .mc-button {
+            background: #4a4a4a;
+            border: 2px solid #000000;
+            border-top-color: #8b8b8b;
+            border-left-color: #8b8b8b;
+            color: #e0e0e0;
+            text-shadow: 2px 2px 0px #2a2a2a;
+            font-family: 'Mojangles', sans-serif;
+            transition: all 0.05s ease;
+        }
+        .mc-button:hover {
+            background: #5c8e32;
+            border-top-color: #bee268;
+            border-left-color: #bee268;
+            color: #ffffff;
+            text-shadow: 2px 2px 0px #1e3a00;
+        }
+        .mc-button:active {
+            background: #3a5e1f;
+            border-top-color: #1e3a00;
+            border-left-color: #1e3a00;
+        }
+
+        /* Minecraft dirt background tiling for the main menu */
+        .mc-dirt-bg {
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAALElEQVR42u3LMQEAAADCoP0bW8EDmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwKcD60YAAf6bybYAAAAASUVORK5CYII=');
+            background-repeat: repeat;
+            background-size: 64px 64px;
+            image-rendering: pixelated;
+        }
+
+        /* Crosshair */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            mix-blend-mode: difference;
+        }
+        #crosshair::before {
+            top: 9px;
+            left: 0;
+            width: 20px;
+            height: 2px;
+        }
+        #crosshair::after {
+            top: 0;
+            left: 9px;
+            width: 2px;
+            height: 20px;
+        }
+
+        /* Selected slot outline */
+        .hotbar-selected {
+            outline: 4px solid #ffffff;
+            outline-offset: -2px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="w-full h-full">
+
+    <!-- MAIN MENU LAYER -->
+    <div id="main-menu" class="absolute inset-0 z-50 flex flex-col justify-between items-center py-12 mc-dirt-bg text-center">
+        <!-- Title & Subtitle Group -->
+        <div class="mt-8">
+            <h1 class="mc-logo text-6xl md:text-8xl text-[#ffaa00] drop-shadow-lg select-none">OPENCRAFT</h1>
+        </div>
+
+        <!-- Menu Action Options -->
+        <div class="flex flex-col gap-4 w-11/12 max-w-md">
+            <button id="btn-new-world" class="mc-button py-3 text-lg font-bold rounded shadow-md">
+                New World
+            </button>
+            <button id="btn-load-cookie" class="mc-button py-3 text-lg font-bold rounded shadow-md">
+                Load from Cookies
+            </button>
+            
+            <div class="flex gap-2">
+                <button id="btn-load-file" class="mc-button py-3 text-md font-bold rounded shadow-md flex-1">
+                    Load .JSON File
+                </button>
+                <input type="file" id="file-input" accept=".json" class="hidden">
+            </div>
+        </div>
+
+        <!-- Attribution and Footer Info -->
+        <div class="mb-2 text-[#aaaaaa] text-xs max-w-2xl px-6 leading-relaxed">
+            <p class="mb-2">
+                All fonts, textures, and sounds are designed to look/sound like Minecraft assets created by Mojang Studios.
+            </p>
+            <p>
+                Open Source Repository: 
+                <a href="https://github.com/MobileFriendlyAllay/opencraft" target="_blank" class="text-blue-400 underline hover:text-blue-300">
+                    github.com/MobileFriendlyAllay/opencraft
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- IN-GAME HEADS UP DISPLAY (HUD) -->
+    <div id="game-hud" class="hidden absolute inset-0 z-40 pointer-events-none flex flex-col justify-between p-4">
+        <!-- Top status / Instructions -->
+        <div class="flex justify-end w-full items-start">
+            <div class="text-right space-y-1 bg-black/60 p-3 rounded text-white text-xs md:text-sm pointer-events-auto">
+                <p class="text-yellow-400 font-bold" id="coordinate-display">X: 0.00 | Y: 0.00 | Z: 0.00</p>
+                <p id="chunk-display">Chunk: 0, 0</p>
+                <p id="active-block-name" class="text-[#5c8e32] font-semibold">Selected: Grass</p>
+            </div>
+        </div>
+
+        <!-- Dynamic Game Alert Indicator (No Window Alerts allowed) -->
+        <div id="game-alert" class="self-center bg-black/80 px-4 py-2 border-2 border-yellow-500 rounded text-yellow-400 text-sm font-semibold opacity-0 transition-opacity duration-300">
+            Game Saved!
+        </div>
+
+        <!-- Center Crosshair pointer -->
+        <div id="crosshair"></div>
+
+        <!-- Bottom Hotbar & Inventory -->
+        <div class="self-center flex flex-col items-center gap-2 mb-4 pointer-events-auto">
+            <div class="flex bg-black/60 border-4 border-[#3a3a3a] p-1 gap-1 rounded">
+                <!-- Slot 1 (Grass) -->
+                <div id="slot-0" class="hotbar-selected w-14 h-14 flex flex-col items-center justify-center bg-zinc-700/80 border-2 border-zinc-600 rounded cursor-pointer relative p-1">
+                    <div class="slot-image w-8 h-8 bg-cover bg-center" style="image-rendering: pixelated;"></div>
+                    <span class="text-[8px] text-white font-bold absolute bottom-0.5 leading-none">Grass</span>
+                </div>
+                <!-- Slot 2 (Dirt) -->
+                <div id="slot-1" class="w-14 h-14 flex flex-col items-center justify-center bg-zinc-700/80 border-2 border-zinc-600 rounded cursor-pointer relative p-1">
+                    <div class="slot-image w-8 h-8 bg-cover bg-center" style="image-rendering: pixelated;"></div>
+                    <span class="text-[8px] text-white font-bold absolute bottom-0.5 leading-none">Dirt</span>
+                </div>
+                <!-- Slot 3 (Stone) -->
+                <div id="slot-2" class="w-14 h-14 flex flex-col items-center justify-center bg-zinc-700/80 border-2 border-zinc-600 rounded cursor-pointer relative p-1">
+                    <div class="slot-image w-8 h-8 bg-cover bg-center" style="image-rendering: pixelated;"></div>
+                    <span class="text-[8px] text-white font-bold absolute bottom-0.5 leading-none">Stone</span>
+                </div>
+                <!-- Slot 4 (Log) -->
+                <div id="slot-3" class="w-14 h-14 flex flex-col items-center justify-center bg-zinc-700/80 border-2 border-zinc-600 rounded cursor-pointer relative p-1">
+                    <div class="slot-image w-8 h-8 bg-cover bg-center" style="image-rendering: pixelated;"></div>
+                    <span class="text-[8px] text-white font-bold absolute bottom-0.5 leading-none">Log</span>
+                </div>
+                <!-- Slot 5 (Leaves) -->
+                <div id="slot-4" class="w-14 h-14 flex flex-col items-center justify-center bg-zinc-700/80 border-2 border-zinc-600 rounded cursor-pointer relative p-1">
+                    <div class="slot-image w-8 h-8 bg-cover bg-center" style="image-rendering: pixelated;"></div>
+                    <span class="text-[8px] text-white font-bold absolute bottom-0.5 leading-none">Leaf</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESC MENU DIALOG (Overlay when paused or exiting pointer lock) -->
+    <div id="pause-menu" class="hidden absolute inset-0 z-40 bg-black/70 flex flex-col justify-center items-center gap-4">
+        <h2 class="mc-logo text-4xl text-white mb-4">GAME PAUSED</h2>
+        <div class="flex flex-col gap-3 w-11/12 max-w-xs">
+            <button id="btn-resume" class="mc-button py-2 rounded font-bold">Resume Game</button>
+            <button id="btn-save-progress" class="mc-button py-2 rounded font-bold text-yellow-300">Save to Cookies</button>
+            <button id="btn-export-json" class="mc-button py-2 rounded font-bold">Export JSON File</button>
+            <button id="btn-quit" class="mc-button py-2 rounded font-bold text-red-400">Exit to Main Menu</button>
+        </div>
+    </div>
+
+    <!-- GAME CANVAS CONTAINER -->
+    <div id="canvas-container" class="w-full h-full"></div>
+
+    <!-- MAIN GAME SCRIPT CONTAINER -->
+    <script src="script.js"></script>
+</body>
+</html>
