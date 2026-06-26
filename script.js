@@ -20,7 +20,7 @@
             
             // Selected hotbar materials
             hotbar: [
-                { id: 1, name: 'Grass', textures: { top: 'grass_top.png', side: 'grass_side.png', bottom: 'grass_bottom.png' } },
+                { id: 1, name: 'Grass', textures: { top: 'grass_top.png', side: 'grass_side.png', bottom: 'dirt.png' } },
                 { id: 2, name: 'Dirt', textures: { top: 'dirt.png', side: 'dirt.png', bottom: 'dirt.png' } },
                 { id: 3, name: 'Stone', textures: { top: 'stone.png', side: 'stone.png', bottom: 'stone.png' } },
                 { id: 4, name: 'Log', textures: { top: 'log_top.png', side: 'log_side.png', bottom: 'log_top.png' } },
