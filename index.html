@@ -63,11 +63,11 @@
             border-left-color: #1e3a00;
         }
 
-        /* Minecraft dirt background tiling for the main menu */
-        .mc-dirt-bg {
-            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAALElEQVR42u3LMQEAAADCoP0bW8EDmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwKcD60YAAf6bybYAAAAASUVORK5CYII=');
-            background-repeat: repeat;
-            background-size: 64px 64px;
+        /* Minecraft background styling: Uses bg.png first with a base64 dirt tiling fallback */
+        .mc-main-bg {
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('images/bg.png'), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAALElEQVR42u3LMQEAAADCoP0bW8EDmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwKcD60YAAf6bybYAAAAASUVORK5CYII=');
+            background-repeat: no-repeat, no-repeat, repeat;
+            background-size: cover, cover, 64px 64px;
             image-rendering: pixelated;
         }
 
@@ -111,7 +111,7 @@
 <body class="w-full h-full">
 
     <!-- MAIN MENU LAYER -->
-    <div id="main-menu" class="absolute inset-0 z-50 flex flex-col justify-between items-center py-12 mc-dirt-bg text-center">
+    <div id="main-menu" class="absolute inset-0 z-50 flex flex-col justify-between items-center py-12 mc-main-bg text-center">
         <!-- Title & Subtitle Group -->
         <div class="mt-8">
             <h1 class="mc-logo text-6xl md:text-8xl text-[#ffaa00] drop-shadow-lg select-none">OPENCRAFT</h1>
@@ -122,8 +122,8 @@
             <button id="btn-new-world" class="mc-button py-3 text-lg font-bold rounded shadow-md">
                 New World
             </button>
-            <button id="btn-load-cookie" class="mc-button py-3 text-lg font-bold rounded shadow-md">
-                Load from Cookies
+            <button id="btn-load-local" class="mc-button py-3 text-lg font-bold rounded shadow-md">
+                Load from Local Storage
             </button>
             
             <div class="flex gap-2">
@@ -204,7 +204,7 @@
         <h2 class="mc-logo text-4xl text-white mb-4">GAME PAUSED</h2>
         <div class="flex flex-col gap-3 w-11/12 max-w-xs">
             <button id="btn-resume" class="mc-button py-2 rounded font-bold">Resume Game</button>
-            <button id="btn-save-progress" class="mc-button py-2 rounded font-bold text-yellow-300">Save to Cookies</button>
+            <button id="btn-save-progress" class="mc-button py-2 rounded font-bold text-yellow-300">Save to Local Storage</button>
             <button id="btn-export-json" class="mc-button py-2 rounded font-bold">Export JSON File</button>
             <button id="btn-quit" class="mc-button py-2 rounded font-bold text-red-400">Exit to Main Menu</button>
         </div>
