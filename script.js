@@ -1,3 +1,7 @@
+        /**
+         * Opencraft - Open Source Minecraft Clone
+         */
+        
         // --- GAME STATE ---
         const Game = {
             // Player properties
@@ -89,7 +93,7 @@
             document.getElementById('btn-new-world').addEventListener('click', () => {
                 startGame(false);
             });
-            document.getElementById('btn-load-cookie').addEventListener('click', () => {
+            document.getElementById('btn-load-local').addEventListener('click', () => {
                 startGame(true);
             });
             document.getElementById('btn-load-file').addEventListener('click', () => {
@@ -125,7 +129,7 @@
                 requestPointerLock();
             });
             document.getElementById('btn-save-progress').addEventListener('click', () => {
-                saveToCookies();
+                saveToLocalStorage();
             });
             document.getElementById('btn-export-json').addEventListener('click', () => {
                 exportToJsonFile();
@@ -146,15 +150,15 @@
         }
 
         // --- LAUNCH GAME ---
-        function startGame(loadFromCookie = false, alreadyParsed = false) {
+        function startGame(loadFromLocalStorageRequested = false, alreadyParsed = false) {
             // Hide main menu, show HUD
             document.getElementById('main-menu').classList.add('hidden');
             document.getElementById('game-hud').classList.remove('hidden');
 
-            if (loadFromCookie) {
-                const loaded = loadFromCookies();
+            if (loadFromLocalStorageRequested) {
+                const loaded = loadFromLocalStorage();
                 if (!loaded) {
-                    showAlert("No saved world found in cookies. Generating new world!");
+                    showAlert("No saved world found in LocalStorage. Generating new world!");
                 }
             } else if (!alreadyParsed) {
                 // Clear any leftover data if starting fresh
@@ -183,7 +187,7 @@
             if (Game.autoSaveInterval) clearInterval(Game.autoSaveInterval);
             Game.autoSaveInterval = setInterval(() => {
                 if (Game.dirty && (Date.now() - Game.lastSaveTime >= 60000)) {
-                    saveToCookies(true);
+                    saveToLocalStorage(true);
                 }
             }, 5000); // Poll dirty flag status every 5 seconds
 
@@ -813,7 +817,7 @@
 
         // --- GAME CONTROLS & POINTER LOCK ---
         function initControls() {
-            // FIX: Prevent registering multiple handlers upon loading worlds
+            // Prevent registering multiple handlers upon loading worlds
             if (Game.controlsInitialized) return;
             Game.controlsInitialized = true;
 
@@ -876,9 +880,9 @@
                     selectHotbarSlot(parseInt(e.key) - 1);
                 }
 
-                // Hotkey 'P' - Quick Save to cookies
+                // Hotkey 'P' - Quick Save to LocalStorage
                 if (keyLower === 'p') {
-                    saveToCookies();
+                    saveToLocalStorage();
                 }
 
                 // Hotkey 'O' - Quick Export JSON file
@@ -1230,8 +1234,8 @@
 
         // --- EXPORT & STORAGE INTERFACE ---
 
-        // Cookie Preservation Handler
-        function saveToCookies(isAuto = false) {
+        // LocalStorage Preservation Handler
+        function saveToLocalStorage(isAuto = false) {
             try {
                 const saveState = {
                     modifiedBlocks: Game.modifiedBlocks,
@@ -1242,50 +1246,38 @@
                     }
                 };
 
-                const serialized = JSON.stringify(saveState);
-                
-                // Keep saves active for 365 days
-                const maxAge = 365 * 24 * 60 * 60;
-                // FIX: Use SameSite=None; Secure to allow cookie usage inside cross-origin iframe sandboxes
-                document.cookie = `opencraft_save=${encodeURIComponent(serialized)}; max-age=${maxAge}; path=/; SameSite=None; Secure`;
+                localStorage.setItem("opencraft_save", JSON.stringify(saveState));
                 
                 if (isAuto) {
                     showAlert("Auto-saved world!");
                 } else {
-                    showAlert("World state saved to cookies!");
+                    showAlert("World state saved to Local Storage!");
                 }
 
                 // Reset trackers
                 Game.dirty = false;
                 Game.lastSaveTime = Date.now();
             } catch (err) {
-                showAlert("Failed to write game cookie.");
+                showAlert("Failed to save to Local Storage.");
             }
         }
 
-        function loadFromCookies() {
+        function loadFromLocalStorage() {
             try {
-                const name = "opencraft_save=";
-                const rawCookie = document.cookie;
-                const ca = rawCookie.split(';');
-                for (let i = 0; i < ca.length; i++) {
-                    let c = ca[i].trim();
-                    if (c.indexOf(name) === 0) {
-                        // FIX: Decode only the saved payload rather than the entire raw cookie string
-                        const val = decodeURIComponent(c.substring(name.length));
-                        const data = JSON.parse(val);
-                        if (data.modifiedBlocks) {
-                            Game.modifiedBlocks = data.modifiedBlocks;
-                            if (data.playerPosition) {
-                                Game.player.position.set(data.playerPosition.x, data.playerPosition.y, data.playerPosition.z);
-                            }
-                            showAlert("World restored from cookies!");
-                            return true;
+                const serialized = localStorage.getItem("opencraft_save");
+                if (serialized) {
+                    const data = JSON.parse(serialized);
+                    if (data.modifiedBlocks) {
+                        Game.modifiedBlocks = data.modifiedBlocks;
+                        if (data.playerPosition) {
+                            Game.player.position.set(data.playerPosition.x, data.playerPosition.y, data.playerPosition.z);
                         }
+                        showAlert("World restored from Local Storage!");
+                        return true;
                     }
                 }
             } catch (err) {
-                console.error("Cookie loading failed: ", err);
+                console.error("Local Storage loading failed: ", err);
             }
             return false;
         }
@@ -1323,7 +1315,7 @@
         function quitToMainMenu() {
             // Save on exit if any blocks have been placed/broken
             if (Game.dirty) {
-                saveToCookies(true);
+                saveToLocalStorage(true);
             }
 
             // Stop auto-save checker
@@ -1344,10 +1336,10 @@
             Game.scene = null;
             Game.camera = null;
 
-            // UI Adjustments
-            document.getElementById('pause-menu').classList.add('hidden');
-            document.getElementById('game-hud').classList.add('hidden');
-            document.getElementById('main-menu').classList.remove('hidden');
+            // Wait a brief moment to finish saving, then refresh page flawlessly
+            setTimeout(() => {
+                window.location.reload();
+            }, 600);
         }
 
         // Custom notification system (replaces block level browser alert boxes)
