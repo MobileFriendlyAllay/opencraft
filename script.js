@@ -340,9 +340,9 @@
             const name = blockConfig.name;
             let filename = '';
 
-            // Map standard layout sides
+            // Map standard layout sides (FIXED: Grass bottom face now points directly to dirt.png)
             if (name === 'grass') {
-                filename = side === 'top' ? 'grass_top.png' : (side === 'bottom' ? 'grass_bottom.png' : 'grass_side.png');
+                filename = side === 'top' ? 'grass_top.png' : (side === 'bottom' ? 'dirt.png' : 'grass_side.png');
             } else if (name === 'log') {
                 filename = (side === 'top' || side === 'bottom') ? 'log_top.png' : 'log_side.png';
             } else {
