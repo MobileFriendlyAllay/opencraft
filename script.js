@@ -74,11 +74,11 @@
 
         // Custom names matching images and audio configs
         const BLOCK_CONFIGS = {
-            [BLOCK_IDS.GRASS]: { name: 'grass', displayName: 'Grass', breakSound: 'grass_break', walkSound: 'grass_walk' },
-            [BLOCK_IDS.DIRT]: { name: 'dirt', displayName: 'Dirt', breakSound: 'dirt_break', walkSound: 'dirt_walk' },
-            [BLOCK_IDS.STONE]: { name: 'stone', displayName: 'Stone', breakSound: 'stone_break', walkSound: 'stone_walk' },
-            [BLOCK_IDS.LOG]: { name: 'log', displayName: 'Log', breakSound: 'log_break', walkSound: 'log_walk' },
-            [BLOCK_IDS.LEAF]: { name: 'leaf', displayName: 'Leaf', breakSound: 'leaf_break', walkSound: 'leaf_walk' }
+            [BLOCK_IDS.GRASS]: { name: 'grass', displayName: 'Grass', breakSound: 'grass_break.ogg', walkSound: 'grass_walk.ogg' },
+            [BLOCK_IDS.DIRT]: { name: 'dirt', displayName: 'Dirt', breakSound: 'dirt_break.ogg', walkSound: 'dirt_walk.ogg' },
+            [BLOCK_IDS.STONE]: { name: 'stone', displayName: 'Stone', breakSound: 'stone_break.ogg', walkSound: 'stone_walk.ogg' },
+            [BLOCK_IDS.LOG]: { name: 'log', displayName: 'Log', breakSound: 'log_break.ogg', walkSound: 'log_walk.ogg' },
+            [BLOCK_IDS.LEAF]: { name: 'leaf', displayName: 'Leaf', breakSound: 'leaf_break.ogg', walkSound: 'leaf_walk.ogg' }
         };
 
         const GRAVITY = -22.0;
@@ -195,13 +195,13 @@
             animate();
         }
 
-        // --- SOUND PLAYER (Fails Silently as requested) ---
+        // --- SOUND PLAYER ---
         function playBlockSound(blockType, type = 'break') {
             const config = BLOCK_CONFIGS[blockType];
             if (!config) return;
 
             const soundName = type === 'break' ? config.breakSound : config.walkSound;
-            const audioPath = `audio/${soundName}.mp3`;
+            const audioPath = `audio/${soundName}`;
 
             // Try to load standard local audio file via Audio element
             const audio = new Audio(audioPath);
