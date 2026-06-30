@@ -78,7 +78,7 @@
             [BLOCK_IDS.DIRT]: { name: 'dirt', displayName: 'Dirt', breakSound: 'dirt_break.ogg', walkSound: 'dirt_walk.ogg' },
             [BLOCK_IDS.STONE]: { name: 'stone', displayName: 'Stone', breakSound: 'stone_break.ogg', walkSound: 'stone_walk.ogg' },
             [BLOCK_IDS.LOG]: { name: 'log', displayName: 'Log', breakSound: 'log_break.ogg', walkSound: 'log_walk.ogg' },
-            [BLOCK_IDS.LEAF]: { name: 'leaf', displayName: 'Leaf', breakSound: 'leaf_break.ogg', walkSound: 'leaf_walk.ogg' }
+            [BLOCK_IDS.LEAF]: { name: 'leaf', displayName: 'Leaf', breakSound: 'grass_break.ogg', walkSound: 'grass_walk.ogg' }
         };
 
         const GRAVITY = -22.0;
