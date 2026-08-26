@@ -1,0 +1,1 @@
+Sitemap: https://opencraft2.vercel.app/sitemap.xml
